@@ -44,7 +44,9 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
         working-directory: frontend
       - name: Build container images
-        run: docker compose -f compose.yaml -f compose.app.yaml build
+        run: |
+          docker compose -f compose.yaml -f compose.app.yaml build
+          docker build --build-arg BACKEND_URL=http://backend:8080 -t little-list-render-check .
       - name: Retain test reports
         if: always()
         uses: actions/upload-artifact@v4
