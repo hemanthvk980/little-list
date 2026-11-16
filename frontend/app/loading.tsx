@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="workspace" role="status">Getting your little list ready…</main>;}

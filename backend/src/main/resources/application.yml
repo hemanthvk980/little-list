@@ -1,0 +1,81 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+    hikari:
+      maximum-pool-size: 8
+      connection-timeout: 3000
+      connection-init-sql: "SET lock_timeout = '5s'; SET statement_timeout = '10s'"
+  mvc:
+    problemdetails:
+      enabled: true
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${MAIL_AUTH:true}
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS:true}
+      mail.smtp.connectiontimeout: 3000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+server:
+  error:
+    include-message: never
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: true
+        same-site: lax
+app:
+  web-url: ${WEB_URL}
+  mail-from: ${MAIL_FROM}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://127.0.0.1:5432/littlelist}
+    username: ${DATABASE_USER:littlelist}
+    password: ${DATABASE_PASSWORD:littlelist-local}
+  mail:
+    host: ${MAIL_HOST:127.0.0.1}
+    port: ${MAIL_PORT:1025}
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+server:
+  address: 127.0.0.1
+  servlet:
+    session:
+      cookie:
+        secure: false
+app:
+  web-url: ${WEB_URL:http://localhost:3000}
+  mail-from: ${MAIL_FROM:wishlist@littlelist.test}
+---
+spring:
+  config:
+    activate:
+      on-profile: google
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${WEB_URL}/login/oauth2/code/google

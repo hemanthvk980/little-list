@@ -1,0 +1,26 @@
+# One release named little-list per namespace. No credentials belong here.
+image:
+  backend: ghcr.io/hemanthvk980/little-list-backend
+  frontend: ghcr.io/hemanthvk980/little-list-frontend
+  tag: "" # Required: tested 40-character Git commit SHA
+imagePullSecrets: []
+existingSecret: little-list-secrets
+config:
+  SPRING_PROFILES_ACTIVE: google
+  SERVER_ADDRESS: "0.0.0.0"
+  WEB_URL: https://staging.example.invalid
+  MAIL_PORT: "587"
+  MAIL_AUTH: "true"
+  MAIL_STARTTLS: "true"
+ingress:
+  enabled: false
+  className: nginx
+  host: staging.example.invalid
+  tlsSecret: little-list-tls
+resources:
+  backend:
+    requests: {cpu: 250m, memory: 512Mi}
+    limits: {cpu: "1", memory: 1Gi}
+  frontend:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {cpu: "1", memory: 512Mi}

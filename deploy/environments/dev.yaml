@@ -1,0 +1,8 @@
+# Replace example.invalid with your real HTTPS origin before deployment.
+config:
+  WEB_URL: https://dev.example.invalid
+ingress:
+  enabled: true
+  host: dev.example.invalid
+  tlsSecret: little-list-dev-tls
+existingSecret: little-list-secrets

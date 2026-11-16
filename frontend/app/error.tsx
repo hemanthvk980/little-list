@@ -1,0 +1,1 @@
+'use client'; export default function ErrorPage({reset}:{reset:()=>void}){return <main className="narrow"><h1>A little hiccup.</h1><p role="alert">We couldn’t load this page. Please try again.</p><button onClick={reset}>Try again</button></main>;}

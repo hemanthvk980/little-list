@@ -1,0 +1,6 @@
+apiVersion: v2
+name: little-list
+description: Next.js and Spring Boot with externally managed PostgreSQL and SMTP
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

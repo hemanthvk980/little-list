@@ -1,0 +1,84 @@
+{{- if ne .Values.config.SPRING_PROFILES_ACTIVE "google" }}
+{{- fail "Hosted environments must use the google profile only" }}
+{{- end }}
+{{- $tag := required "image.tag must be a tested Git commit SHA" .Values.image.tag }}
+{{- if not (regexMatch "^[a-f0-9]{40}$" $tag) }}
+{{- fail "image.tag must be a full 40-character commit SHA" }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: little-list-config
+data:
+{{- range $key, $value := .Values.config }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- range $component := list "backend" "frontend" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: little-list-{{ $component }}
+spec:
+  replicas: 1
+  # In-memory backend sessions: avoid two independent session stores during rollout.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: little-list, component: {{ $component }}}
+  template:
+    metadata:
+      labels: {app: little-list, component: {{ $component }}}
+      annotations:
+        config-checksum: {{ $.Values.config | toJson | sha256sum }}
+    spec:
+      automountServiceAccountToken: false
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $component }}
+          image: "{{ index $.Values.image $component }}:{{ $tag }}"
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            capabilities: {drop: [ALL]}
+            seccompProfile: {type: RuntimeDefault}
+          ports:
+            - name: http
+              containerPort: {{ if eq $component "backend" }}8080{{ else }}3000{{ end }}
+          {{- if eq $component "backend" }}
+          envFrom:
+            - configMapRef: {name: little-list-config}
+            - secretRef: {name: {{ $.Values.existingSecret | quote }}}
+          {{- end }}
+          startupProbe:
+            httpGet:
+              path: {{ if eq $component "backend" }}/actuator/health{{ else }}/{{ end }}
+              port: http
+            failureThreshold: 60
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: {{ if eq $component "backend" }}/actuator/health{{ else }}/{{ end }}
+              port: http
+            periodSeconds: 10
+          resources:
+            {{- toYaml (index $.Values.resources $component) | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: little-list-{{ $component }}
+spec:
+  type: ClusterIP
+  selector: {app: little-list, component: {{ $component }}}
+  ports:
+    - name: http
+      port: {{ if eq $component "backend" }}8080{{ else }}3000{{ end }}
+      targetPort: http
+{{- end }}
