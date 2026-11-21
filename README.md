@@ -1,3 +1,7 @@
+## Help page update — 21 November 2026
+
+Replaced the developer-facing help paragraph with parent and guest guides, expandable FAQs, and sample/dashboard links. Covers email confirmation, 48-hour reservations, purchase recording, privacy and QR sharing. Removed local Mailpit and launch-setup text from the public page. This update does not configure production email delivery or change backend routing.
+
 ## Complete Render guide - 18 November 2026
 
 Follow [RENDER.md](RENDER.md) for the complete database, backend and frontend deployment sequence, exact service settings, Google/SMTP configuration, CI/CD, domains and troubleshooting. The root Docker build fix passed GitHub Actions. Live Render deployment still needs configuration and verification.

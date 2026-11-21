@@ -1,0 +1,20 @@
+.page { max-width: 1120px; margin: 0 auto; padding: 64px 24px 80px; }
+.hero { max-width: 740px; margin: 0 auto 48px; text-align: center; }
+.hero h1 { font-size: clamp(2.3rem, 5vw, 3.6rem); }
+.hero > p:not(:first-child) { max-width: 590px; margin: 20px auto 28px; line-height: 1.7; }
+.guides { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.guides h2 { font-size: 1.9rem; }
+.guides ol { padding-left: 22px; line-height: 1.8; }
+.guides li { padding-left: 6px; margin-bottom: 18px; }
+.note { padding: 16px; background: #faf0e8; border-radius: 12px; line-height: 1.7; }
+.faq { max-width: 800px; margin: 56px auto 0; }
+.faq h2 { font-size: 2.2rem; margin-bottom: 24px; }
+.faq details { border-bottom: 1px solid #e4d8cf; padding: 20px 0; }
+.faq summary { cursor: pointer; font-weight: 600; line-height: 1.6; color: #603657; }
+.faq summary:focus-visible { outline: 2px solid #603657; outline-offset: 6px; border-radius: 3px; }
+.faq details p { line-height: 1.8; margin: 14px 0 4px; }
+@media (max-width: 700px) {
+  .page { padding: 40px 20px 56px; }
+  .guides { grid-template-columns: 1fr; }
+  .hero { margin-bottom: 32px; }
+}
