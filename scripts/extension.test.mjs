@@ -41,3 +41,7 @@ test('popup reads only on click and hands reviewed data to the fixed app origin'
  const url=new URL(opened);assert.equal(url.origin,'http://localhost:3000');assert.equal(url.pathname,'/capture');assert.equal(url.search,'');
  const draft=JSON.parse(new URLSearchParams(url.hash.slice(1)).get('draft'));assert.equal(draft.name,'Reviewed towel');assert.equal(draft.price,'599');
 });
+
+test('extension captures structured product image without downloading it',()=>{
+ assert.equal(extract({json:[{'@type':'Product',name:'Book',image:['https://m.media-amazon.com/images/I/book.jpg']}]}).imageUrl,'https://m.media-amazon.com/images/I/book.jpg');
+});

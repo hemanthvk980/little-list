@@ -1,3 +1,11 @@
+## 22 November 2026 — product previews and registry image rows
+
+- Maven verify: 36 tests passed (17 wishlist/database, 7 admin/security, 7 product preview, 5 email), no failures/errors/skips. V8 image-reference migration exercised on PostgreSQL 17.
+- Next production build passed; final TypeScript check passed after admin singular/plural copy correction.
+- Capture, extension and QR suite: 13 tests passed.
+- Playwright against an isolated local frontend with synthetic API/image fixtures: Review gift prefills name, price and image; desktop uses three horizontal columns; 390 px mobile has no document overflow; broken images use category art; purchase action still opens email confirmation; admin has no mojibake and checkbox measures 20 by 20 px. No real registry records or emails created.
+- This verification does not establish reliable live scraping across retailers. CAPTCHA, JavaScript-only pages, changing markup and hotlink policies remain external limitations. No R2 account, product-image upload or production rollout was performed.
+
 ## Conditional email providers — 22 November 2026
 
 Maven verify passed with 27 tests (16 registry, 6 admin, 5 email). Email tests cover SMTP health registration, absence of JavaMailSender/SMTP health in Resend mode even with stale Gmail settings, required API credentials, explicit disabled failure, local mock HTTP payload/idempotency headers and 401/429/500/redirect rejection without secret disclosure. No external emails were sent and no production provider key was used. Initial full test run required starting Docker; the complete suite was rerun successfully afterward. Live delivery requires operator configuration described in EMAIL.md.

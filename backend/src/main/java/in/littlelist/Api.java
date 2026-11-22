@@ -144,7 +144,8 @@ class Api {
                      @Size(max = 300) String note, @Size(max = 2048) String retailerUrl,
                      @Min(0) Integer pricePaise, @NotNull @Min(1) @Max(99) Integer quantity,
                      @Size(max=120) String variant, @Pattern(regexp="essential|nice-to-have") String priority,
-                     @Pattern(regexp="manual|link|extension|template") String captureSource, UUID requestId) {
+                     @Pattern(regexp="manual|link|extension|template") String captureSource, UUID requestId, @Size(max=2048) String imageUrl) {
+        GiftInput(String name,String category,String note,String retailerUrl,Integer pricePaise,Integer quantity,String variant,String priority,String captureSource,UUID requestId) { this(name,category,note,retailerUrl,pricePaise,quantity,variant,priority,captureSource,requestId,null); }
         GiftInput(String name,String category,String note,String retailerUrl,Integer pricePaise,Integer quantity) {
             this(name,category,note,retailerUrl,pricePaise,quantity,null,null,null,null);
         }

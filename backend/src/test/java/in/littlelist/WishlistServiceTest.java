@@ -28,6 +28,14 @@ class WishlistServiceTest {
     @Autowired RegistryApi registry;
     @Autowired ShortLinks shortLinks;
     @Autowired RegistryPhotos photos;
+    @Test void imageReferencesSurviveSaveSharingAndRemoval() {
+        String url="https://m.media-amazon.com/images/I/book.jpg";
+        var saved=service.saveGift("owner",list.id(),gift,new Api.GiftInput("Book","Play","","https://www.amazon.in/dp/B012345678",49900,1,"","nice-to-have","link",null,url));
+        assertEquals(url,saved.items().getFirst().imageUrl());
+        assertEquals(url,service.shared(list.shareId()).items().getFirst().imageUrl());
+        status(400,()->service.saveGift("owner",list.id(),gift,new Api.GiftInput("Book","Play","",null,null,1,"","nice-to-have","link",null,"https://evil.test/image.jpg")));
+        service.saveGift("owner",list.id(),gift,input(1));assertNull(service.shared(list.shareId()).items().getFirst().imageUrl());
+    }
     @Test void directPurchaseRequiresConfirmationAndRetriesOnce() {
         var delivery=service.requestClaim(list.shareId(),gift,"bought@example.test","purchase");
         assertEquals(1,service.shared(list.shareId()).items().getFirst().available());

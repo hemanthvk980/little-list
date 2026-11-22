@@ -1,3 +1,7 @@
+## Product previews and horizontal gifts — 22 November 2026
+
+Review gift now attempts a bounded, authenticated product lookup for Amazon India, Flipkart and FirstCry. Suggested names, INR estimates, variants and supported retailer image URLs remain editable before saving. V8 stores only the image URL, not image bytes. Owner and guest registries use responsive horizontal rows with real images and a missing-image fallback. Admin encoding/checkbox styling is corrected. See [PRODUCT-PREVIEWS.md](PRODUCT-PREVIEWS.md) for supported sources, security, deployment and limitations.
+
 ## Configurable email delivery — 22 November 2026
 
 Added conditional SMTP, Resend HTTPS and explicit disabled delivery modes. Render Free should use `MAIL_PROVIDER=resend` with a sending API key and verified sender; see [EMAIL.md](EMAIL.md). SMTP remains the default for local Mailpit. Only SMTP mode creates the SMTP health contributor, avoiding Gmail port-587 checks in API mode. This supersedes earlier notes that HTTPS email is unimplemented. Actual delivery still requires provider credentials/domain configuration.

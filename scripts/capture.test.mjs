@@ -16,3 +16,8 @@ test('capture bounds untrusted fields and does not coerce foreign price strings'
  assert.equal(d.name.length,120);assert.equal(d.variant.length,120);assert.equal(d.price,'');assert.equal(d.owner,undefined);
  assert.equal(parseCapture(JSON.stringify({retailerUrl:'https://example.com',price:'1234.50'})).price,'1234.50');
 });
+
+test('captured images allow only trusted HTTPS retailer CDNs',()=>{
+ for(const imageUrl of ['javascript:alert(1)','https://127.0.0.1/image.jpg','https://m.media-amazon.com.evil.test/image.jpg'])assert.equal(parseCapture(JSON.stringify({retailerUrl:'https://www.amazon.in/dp/B012345678',imageUrl})).imageUrl,'');
+ assert.equal(parseCapture(JSON.stringify({retailerUrl:'https://www.amazon.in/dp/B012345678',imageUrl:'https://m.media-amazon.com/images/I/book.jpg'})).imageUrl,'https://m.media-amazon.com/images/I/book.jpg');
+});

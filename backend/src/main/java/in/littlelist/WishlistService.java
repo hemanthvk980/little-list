@@ -23,7 +23,7 @@ public class WishlistService {
         this.db=db; this.json=json; this.mail=mail; this.webUrl=webUrl; this.from=from;
     }
     public record Header(UUID id, String title, String occasion, UUID shareId) {}
-    public record Gift(UUID id, String name, String category, String note, String retailerUrl, Integer pricePaise, int quantity, int held, int purchased, int available, String variant, String priority, String merchant, String captureSource, OffsetDateTime capturedAt) {}
+    public record Gift(UUID id, String name, String category, String note, String retailerUrl, Integer pricePaise, int quantity, int held, int purchased, int available, String variant, String priority, String merchant, String captureSource, OffsetDateTime capturedAt, String imageUrl) {}
     public record Wishlist(UUID id, String title, String occasion, UUID shareId, List<Gift> items, String greeting, String shortCode, UUID photoVersion) {}
     public record Shared(String title, String occasion, List<Gift> items, String greeting, UUID photoVersion) {}
     public record Claim(UUID id, String name, String retailerUrl, String status, OffsetDateTime heldUntil, UUID giftId, UUID shareId) {}
@@ -42,7 +42,7 @@ public class WishlistService {
     private List<Gift> gifts(UUID id) {
         return db.query("select g.*, count(c.id) filter(where c.status='held' and c.held_until>clock_timestamp()) held, count(c.id) filter(where c.status='purchased') purchased from gift g left join gift_claim c on c.gift_id=g.id where g.wishlist_id=? and not g.archived group by g.id order by g.created_at,g.id", (r,n)-> {
             int held=r.getInt("held"), purchased=r.getInt("purchased"), quantity=r.getInt("quantity");
-            return new Gift(r.getObject("id",UUID.class),r.getString("name"),r.getString("category"),r.getString("note"),r.getString("retailer_url"),r.getObject("price_paise",Integer.class),quantity,held,purchased,quantity-held-purchased,r.getString("variant"),r.getString("priority"),Retailer.merchant(r.getString("retailer_url")),r.getString("capture_source"),r.getObject("created_at",OffsetDateTime.class));
+            return new Gift(r.getObject("id",UUID.class),r.getString("name"),r.getString("category"),r.getString("note"),r.getString("retailer_url"),r.getObject("price_paise",Integer.class),quantity,held,purchased,quantity-held-purchased,r.getString("variant"),r.getString("priority"),Retailer.merchant(r.getString("retailer_url")),r.getString("capture_source"),r.getObject("created_at",OffsetDateTime.class),r.getString("image_url"));
         },id);
     }
     private Wishlist view(UUID id) { Header h=header(row("select * from wishlist where id=?",id)); return new Wishlist(id,h.title(),h.occasion(),h.shareId(),gifts(id),(String)row("select greeting from wishlist where id=?",id).get("greeting"),db.queryForObject("select (select code from registry_link where share_id=w.share_id) from wishlist w where id=?",String.class,id),(UUID)row("select photo_version from wishlist where id=?",id).get("photo_version")); }
@@ -65,6 +65,7 @@ public class WishlistService {
     private int occupied(UUID id) { return db.queryForObject("select count(*) from gift_claim where gift_id=? and (status='purchased' or (status='held' and held_until>clock_timestamp()))",Integer.class,id); }
     @Transactional public Wishlist saveGift(String owner,UUID id,UUID gift,Api.GiftInput input) {
         owner(owner,id); url(input.retailerUrl());
+        if(input.imageUrl()!=null && !input.imageUrl().isBlank() && ProductPreview.image(input.imageUrl()).isEmpty()) throw error(400,"Choose an HTTPS image from a supported retailer image host.");
         String fingerprint=hash(json.valueToTree(input).toString());
         if(gift==null && input.requestId()!=null) {
             var prior=db.queryForList("select body_hash from gift_save where wishlist_id=? and request_id=?",id,input.requestId());
@@ -79,7 +80,7 @@ public class WishlistService {
             if(input.quantity()<occupied(gift)) throw error(409,"Quantity cannot be lower than purchased and actively held units.");
             db.update("update gift set name=?,category=?,note=?,retailer_url=?,price_paise=?,quantity=? where id=?",input.name().trim(),input.category().trim(),input.note(),input.retailerUrl(),input.pricePaise(),input.quantity(),gift);
         }
-        db.update("update gift set variant=?,priority=?,capture_source=? where id=?",input.variant(),input.priority()==null?"nice-to-have":input.priority(),input.captureSource()==null?"manual":input.captureSource(),saved);
+        db.update("update gift set variant=?,priority=?,capture_source=?,image_url=? where id=?",input.variant(),input.priority()==null?"nice-to-have":input.priority(),input.captureSource()==null?"manual":input.captureSource(),input.imageUrl(),saved);
         if(gift==null && input.requestId()!=null) db.update("insert into gift_save(wishlist_id,request_id,body_hash) values(?,?,?)",id,input.requestId(),fingerprint);
         return view(id);
     }

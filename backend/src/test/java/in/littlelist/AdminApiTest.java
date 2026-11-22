@@ -30,6 +30,12 @@ class AdminApiTest {
    mvc.perform(get("/api/v1/admin/"+path).with(oidcLogin().idToken(t->t.subject("other").issuer("https://accounts.google.com")))).andExpect(status().isForbidden());
   }
  }
+ @Test void productPreviewRequiresLoginAndCsrf() throws Exception {
+  var post=org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/products/preview").contentType("application/json").content("{\"url\":\"https://unsupported.example/product\"}");
+  mvc.perform(post.with(csrf())).andExpect(status().isUnauthorized());
+  mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/products/preview").with(user("demo")).contentType("application/json").content("{\"url\":\"https://unsupported.example/product\"}")).andExpect(status().isForbidden());
+  mvc.perform(post.with(user("demo")).with(csrf())).andExpect(status().isOk()).andExpect(jsonPath("$.name").value("")).andExpect(header().string("Cache-Control","no-store"));
+ }
  @Test void issuerCannotBeSpoofed() throws Exception {mvc.perform(get("/api/v1/admin/users").with(oidcLogin().idToken(t->t.subject("owner-test").issuer("https://other.example")))).andExpect(status().isForbidden());}
  @Test void pagesAreBoundedAndSensitiveFieldsExcluded() throws Exception {
   db.update("insert into app_user(owner_subject,display_name) values('test-a','Alice'),('test-b','Bob') on conflict do nothing");

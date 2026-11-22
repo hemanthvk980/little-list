@@ -1,5 +1,5 @@
 export type Session={signedIn:boolean;csrf:string;local:boolean;google:boolean};
-export type Gift={id:string;name:string;category:string;note:string;retailerUrl:string;pricePaise:number|null;quantity:number;held:number;purchased:number;available:number;variant?:string;priority?:string;merchant?:string;captureSource?:string;capturedAt?:string};
+export type Gift={imageUrl?:string;id:string;name:string;category:string;note:string;retailerUrl:string;pricePaise:number|null;quantity:number;held:number;purchased:number;available:number;variant?:string;priority?:string;merchant?:string;captureSource?:string;capturedAt?:string};
 export type Wishlist={id:string;title:string;occasion:string;greeting?:string;shareId:string|null;shortCode?:string|null;photoVersion?:string|null;items:Gift[]};
 export type Claim={id:string;name:string;retailerUrl:string;status:string;heldUntil:string;giftId:string;shareId:string|null};
 export type Starter={key:string;name:string;category:string;quantity:number;collections:string[]};

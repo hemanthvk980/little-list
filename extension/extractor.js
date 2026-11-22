@@ -33,5 +33,7 @@ export function extractProduct() {
   }
   if(!price){const match=displayed.match(/(?:₹|Rs\.?|INR)\s*([\d,]+(?:\.\d{1,2})?)(?![\d.])/i);if(match)price=number(match[1]);}
   if(!variant)variant=clean([product?.size,product?.color].filter(v=>typeof v==='string').join(' · '),120);
-  return {name,retailerUrl:u.href.slice(0,2048),price,variant};
+  let rawImage=product?.image;if(Array.isArray(rawImage))rawImage=rawImage[0];if(rawImage&&typeof rawImage==='object')rawImage=rawImage.url;
+  let imageUrl='';try{const candidate=new URL(typeof rawImage==='string'?rawImage:meta('og:image'),u);if(candidate.protocol==='https:'&&!candidate.username&&!candidate.password&&candidate.href.length<=2048)imageUrl=candidate.href;}catch{}
+  return {name,retailerUrl:u.href.slice(0,2048),price,variant,imageUrl};
 }
