@@ -1,3 +1,7 @@
+## Render Free email update — 22 November 2026
+
+The backend now supports `MAIL_PROVIDER=resend` through HTTPS, or `MAIL_PROVIDER=disabled` as a temporary mode that rejects email operations. See [EMAIL.md](EMAIL.md) for exact setup. Existing SMTP instructions below apply only to SMTP-capable hosting; Render Free blocks SMTP. Configure the provider on the backend and redeploy; the frontend settings are unchanged.
+
 # Little List: complete Render deployment guide
 
 Checked against Render documentation on 18 November 2026.

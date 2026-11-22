@@ -1,3 +1,7 @@
+## Configurable email delivery — 22 November 2026
+
+Added conditional SMTP, Resend HTTPS and explicit disabled delivery modes. Render Free should use `MAIL_PROVIDER=resend` with a sending API key and verified sender; see [EMAIL.md](EMAIL.md). SMTP remains the default for local Mailpit. Only SMTP mode creates the SMTP health contributor, avoiding Gmail port-587 checks in API mode. This supersedes earlier notes that HTTPS email is unimplemented. Actual delivery still requires provider credentials/domain configuration.
+
 ## Owner dashboard and fallback pages — 21 November 2026
 
 Read-only `/admin` now supports paginated users, their registries, gift items and checklist entries. Google login persists verified profiles; V7 backfills existing owners. Access is denied until `ADMIN_GOOGLE_IDENTITY` is configured. See [ADMIN.md](ADMIN.md) for setup, security controls and deployment limitations. Branded 404/error pages and a timeout-aware short-link handler are included. Production email configuration remains separate.

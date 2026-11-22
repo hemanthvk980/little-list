@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,9 +17,9 @@ import org.springframework.web.server.ResponseStatusException;
 public class WishlistService {
     private final JdbcTemplate db;
     private final com.fasterxml.jackson.databind.ObjectMapper json;
-    private final JavaMailSender mail;
+    private final EmailDelivery mail;
     private final String webUrl, from;
-    public WishlistService(JdbcTemplate db, JavaMailSender mail, com.fasterxml.jackson.databind.ObjectMapper json, @Value("${app.web-url}") String webUrl, @Value("${app.mail-from}") String from) {
+    public WishlistService(JdbcTemplate db, EmailDelivery mail, com.fasterxml.jackson.databind.ObjectMapper json, @Value("${app.web-url}") String webUrl, @Value("${app.mail-from}") String from) {
         this.db=db; this.json=json; this.mail=mail; this.webUrl=webUrl; this.from=from;
     }
     public record Header(UUID id, String title, String occasion, UUID shareId) {}
@@ -105,7 +104,7 @@ public class WishlistService {
     public void sendRequest(Delivery delivery) {
         SimpleMailMessage message=new SimpleMailMessage(); message.setFrom(from); message.setTo(delivery.email()); message.setSubject("Confirm your Little List gift");
         message.setText((delivery.intent().equals("purchase")?"Open this link, then confirm you purchased one unit. This records your report, not a retailer-verified order.":"Open this link, then explicitly confirm to hold one unit for 48 hours.")+" Opening the link changes nothing.\n\n"+webUrl+"/confirm?intent="+delivery.intent()+"#token="+delivery.token()+"\n\nThis verification link expires in 30 minutes.");
-        try { mail.send(message); } catch(org.springframework.mail.MailException e) { throw error(503,"We could not send your email. Please try again shortly."); }
+        try { mail.send(message,"claim-"+hash(delivery.token())); } catch(org.springframework.mail.MailException e) { throw error(503,"We could not send your email. Please try again shortly."); }
     }
     @Transactional public Claim confirm(String token,String management) {
         var initial=row("select r.gift_id,g.wishlist_id from claim_request r join gift g on g.id=r.gift_id where r.token_hash=?",hash(token));

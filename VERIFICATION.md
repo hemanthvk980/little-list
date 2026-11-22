@@ -1,3 +1,7 @@
+## Conditional email providers — 22 November 2026
+
+Maven verify passed with 27 tests (16 registry, 6 admin, 5 email). Email tests cover SMTP health registration, absence of JavaMailSender/SMTP health in Resend mode even with stale Gmail settings, required API credentials, explicit disabled failure, local mock HTTP payload/idempotency headers and 401/429/500/redirect rejection without secret disclosure. No external emails were sent and no production provider key was used. Initial full test run required starting Docker; the complete suite was rerun successfully afterward. Live delivery requires operator configuration described in EMAIL.md.
+
 ## Owner admin and fallbacks — 22 November 2026
 
 - 22 PostgreSQL-backed tests passed: 16 existing registry tests plus 6 admin tests. New checks cover anonymous/non-admin denial on every route, issuer mismatch, empty allowlist, profile upsert, pagination bounds and separation, drilldown queries, sensitive-field exclusion, missing records, no-store headers, audit events and rate limits.
