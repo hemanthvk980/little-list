@@ -1,3 +1,10 @@
+## Owner admin and fallbacks — 22 November 2026
+
+- 22 PostgreSQL-backed tests passed: 16 existing registry tests plus 6 admin tests. New checks cover anonymous/non-admin denial on every route, issuer mismatch, empty allowlist, profile upsert, pagination bounds and separation, drilldown queries, sensitive-field exclusion, missing records, no-store headers, audit events and rate limits.
+- Next production build and TypeScript passed. The 11 existing capture/extension/QR tests passed; the additional production-server short-link integration test passed after correcting its test server working directory. It checks success redirects, QR attribution, HEAD/prefetch forwarding, HTTP 404/503 fallback bodies, no-store and rejection of external redirects.
+- Playwright with synthetic intercepted API fixtures verified users pagination → registries → gift items, ordinary-user denial and 390px mobile layout without horizontal overflow. Browser fixtures are not a real Google login or live production validation. No user registry records were created.
+- ADMIN.md documents the required owner identity setting. Live Render deployment and owner activation have not been verified. Production SMTP limitations remain.
+
 ## Registry photos, dashboard products and purchase reporting — 16 November 2026
 
 Implemented registry profile-photo upload/removal, grouped gift categories and sidebar navigation, expandable checklist progress, dashboard/registry quick-add, editable gift ideas with retailer browsing shortcuts, guest I purchased this with email verification, and clear purchased/partially-purchased tags. Spring starter-mail remains the email integration. QR sharing from the preceding request is included. See INTEGRATIONS.md for the retailer API and Spring AI research, limits and next milestones. Live retailer feeds and AI recommendations are not enabled; native Android code does not exist.

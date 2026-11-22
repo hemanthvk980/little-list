@@ -1,0 +1,2 @@
+'use client';
+export default function GlobalError({reset}:{reset:()=>void}){return <html lang="en"><body style={{background:'#faf8f3',color:'#382d35',fontFamily:'sans-serif',textAlign:'center',padding:40}}><p aria-hidden="true" style={{fontSize:64}}>🧸</p><h1>A little hiccup.</h1><p>We couldn’t load this page. Please try again.</p><button onClick={reset}>Try again</button> <a href="/">Go home</a></body></html>;}

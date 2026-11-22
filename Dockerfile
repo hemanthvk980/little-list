@@ -11,7 +11,8 @@ RUN npm run build
 RUN npm prune --omit=dev
 FROM node:24-alpine
 WORKDIR /app
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
+ARG BACKEND_URL=http://backend:8080
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 BACKEND_URL=$BACKEND_URL
 COPY --from=build --chown=node:node /app ./
 USER node
 EXPOSE 3000

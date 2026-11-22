@@ -1,1 +1,3 @@
-'use client'; export default function ErrorPage({reset}:{reset:()=>void}){return <main className="narrow"><h1>A little hiccup.</h1><p role="alert">We couldn’t load this page. Please try again.</p><button onClick={reset}>Try again</button></main>;}
+'use client';
+import { Fallback } from '../components/fallback';
+export default function ErrorPage({reset}:{reset:()=>void}){return <><Fallback temporary/><div style={{textAlign:'center',marginBottom:40}}><button onClick={reset}>Try again</button></div></>;}

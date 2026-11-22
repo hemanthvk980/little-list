@@ -25,10 +25,11 @@ class SecurityConfig {
 
     @Bean
     SecurityFilterChain security(HttpSecurity http, ObjectProvider<InMemoryUserDetailsManager> local,
-                                ObjectProvider<ClientRegistrationRepository> google) throws Exception {
+                                ObjectProvider<ClientRegistrationRepository> google, AdminAccess admin) throws Exception {
         http.authorizeHttpRequests(auth -> auth
             .requestMatchers("/r/**", "/actuator/health", "/api/v1/session", "/api/v1/shared/**",
                 "/api/v1/claims/**", "/oauth2/**", "/login/oauth2/**", "/error").permitAll()
+            .requestMatchers("/api/v1/admin/**").access((authentication, context) -> new org.springframework.security.authorization.AuthorizationDecision(admin.allowed(authentication.get())))
             .anyRequest().authenticated())
             .exceptionHandling(errors -> errors.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .logout(logout -> logout.logoutUrl("/api/v1/logout")
@@ -42,6 +43,7 @@ class SecurityConfig {
         }
         if (google.getIfAvailable() != null) {
             http.oauth2Login(oauth -> oauth.loginPage("/sign-in").defaultSuccessUrl("/dashboard", true)
+                .successHandler((request,response,authentication) -> { admin.login(authentication); response.sendRedirect("/dashboard"); })
                 .failureUrl("/sign-in?error=google"));
         }
         return http.build();

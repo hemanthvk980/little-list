@@ -6,7 +6,7 @@ pipeline {
     stage('Backend') { steps { dir('backend') { sh 'sh mvnw -B verify' } } }
     stage('Frontend') { steps { dir('frontend') { sh 'npm ci && npm run build && npm audit --omit=dev --audit-level=high' } } }
     stage('JavaScript and Helm') { steps {
-      sh 'node --test scripts/capture.test.mjs scripts/extension.test.mjs scripts/qr.test.mjs'
+      sh 'node --test scripts/capture.test.mjs scripts/extension.test.mjs scripts/qr.test.mjs scripts/short-link.test.mjs'
       sh 'sh scripts/check-helm.sh'
     } }
     stage('Containers and SMTP smoke') { steps {

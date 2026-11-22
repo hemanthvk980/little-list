@@ -1,3 +1,7 @@
+## Owner dashboard and fallback pages — 21 November 2026
+
+Read-only `/admin` now supports paginated users, their registries, gift items and checklist entries. Google login persists verified profiles; V7 backfills existing owners. Access is denied until `ADMIN_GOOGLE_IDENTITY` is configured. See [ADMIN.md](ADMIN.md) for setup, security controls and deployment limitations. Branded 404/error pages and a timeout-aware short-link handler are included. Production email configuration remains separate.
+
 ## Help page update — 21 November 2026
 
 Replaced the developer-facing help paragraph with parent and guest guides, expandable FAQs, and sample/dashboard links. Covers email confirmation, 48-hour reservations, purchase recording, privacy and QR sharing. Removed local Mailpit and launch-setup text from the public page. This update does not configure production email delivery or change backend routing.

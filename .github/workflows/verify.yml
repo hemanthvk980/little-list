@@ -29,7 +29,7 @@ jobs:
         working-directory: backend
       - run: npm ci && npm run build
         working-directory: frontend
-      - run: node --test scripts/capture.test.mjs scripts/extension.test.mjs scripts/qr.test.mjs
+      - run: node --test scripts/capture.test.mjs scripts/extension.test.mjs scripts/qr.test.mjs scripts/short-link.test.mjs
       - run: docker compose up -d --wait
       - name: Start apps and verify the HTTP workflow
         run: |

@@ -21,21 +21,26 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/v1")
 class Api {
     private final WishlistService service;
+    private final AdminAccess admin;
     private final ObjectProvider<InMemoryUserDetailsManager> local;
     private final ObjectProvider<ClientRegistrationRepository> google;
 
     Api(WishlistService service, ObjectProvider<InMemoryUserDetailsManager> local,
-        ObjectProvider<ClientRegistrationRepository> google) {
+        ObjectProvider<ClientRegistrationRepository> google, AdminAccess admin) {
+        this.admin = admin;
         this.service = service;
         this.local = local;
         this.google = google;
     }
 
     @GetMapping("/session")
-    Map<String, Object> session(Principal principal, CsrfToken csrf) {
-        return Map.of("signedIn", principal != null, "csrf", csrf.getToken(),
+    Map<String, Object> session(Authentication principal, CsrfToken csrf) {
+        return Map.of("admin", admin.allowed(principal), "signedIn", principal != null, "csrf", csrf.getToken(),
             "local", local.getIfAvailable() != null, "google", google.getIfAvailable() != null);
     }
+
+    @GetMapping("/identity")
+    Map<String,String> identity(Authentication auth) { return Map.of("identity",owner(auth)); }
 
     @GetMapping("/wishlists")
     List<WishlistService.Header> lists(Authentication auth) {
