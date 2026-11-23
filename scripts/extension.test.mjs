@@ -38,10 +38,16 @@ test('popup reads only on click and hands reviewed data to the fixed app origin'
  vm.runInNewContext(source,{document:{getElementById:element},chrome,extractProduct,URL,encodeURIComponent});
  assert.equal(reads,0);await elements.read.listeners.click();assert.equal(reads,1);assert.equal(elements.review.hidden,false);
  elements.name.value='Reviewed towel';await elements.review.listeners.submit({preventDefault(){}});
- const url=new URL(opened);assert.equal(url.origin,'http://localhost:3000');assert.equal(url.pathname,'/capture');assert.equal(url.search,'');
+ const url=new URL(opened);assert.equal(url.origin,'https://little-list-30e7.onrender.com');assert.equal(url.pathname,'/capture');assert.equal(url.search,'');
  const draft=JSON.parse(new URLSearchParams(url.hash.slice(1)).get('draft'));assert.equal(draft.name,'Reviewed towel');assert.equal(draft.price,'599');
+ elements.destination.value='local';await elements.review.listeners.submit({preventDefault(){}});assert.equal(new URL(opened).origin,'http://localhost:3000');
 });
 
 test('extension captures structured product image without downloading it',()=>{
  assert.equal(extract({json:[{'@type':'Product',name:'Book',image:['https://m.media-amazon.com/images/I/book.jpg']}]}).imageUrl,'https://m.media-amazon.com/images/I/book.jpg');
+});
+
+test('Amazon alternate core price and landing image are captured',()=>{
+ const p=extract({url:'https://www.amazon.in/First-Kick-Blankets-Printed-Blanket/dp/B0FH79G2MW/',nodes:{'#productTitle':'First Kick Kids Blanket','#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen':'₹499.00','#landingImage':'https://m.media-amazon.com/images/I/61zQfj6RxDL._SL1024_.jpg'}});
+ assert.equal(p.price,'499.00');assert.equal(p.imageUrl,'https://m.media-amazon.com/images/I/61zQfj6RxDL._SL1024_.jpg');
 });

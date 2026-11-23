@@ -22,7 +22,7 @@ export function extractProduct() {
   const host=u.hostname.toLowerCase();let displayed='';
   if(host==='amazon.in'||host.endsWith('.amazon.in')){
     name=clean(text('#productTitle'),120)||name;
-    displayed=text('#corePriceDisplay_desktop_feature_div .a-price .a-offscreen');
+    displayed=text('#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen')||text('#corePriceDisplay_desktop_feature_div .a-price .a-offscreen');
     variant=clean([text('#variation_size_name .selection'),text('#variation_color_name .selection')].filter(Boolean).join(' · '),120);
   } else if(host==='flipkart.com'||host.endsWith('.flipkart.com')){
     name=clean(text('h1'),120)||name;
@@ -34,6 +34,7 @@ export function extractProduct() {
   if(!price){const match=displayed.match(/(?:₹|Rs\.?|INR)\s*([\d,]+(?:\.\d{1,2})?)(?![\d.])/i);if(match)price=number(match[1]);}
   if(!variant)variant=clean([product?.size,product?.color].filter(v=>typeof v==='string').join(' · '),120);
   let rawImage=product?.image;if(Array.isArray(rawImage))rawImage=rawImage[0];if(rawImage&&typeof rawImage==='object')rawImage=rawImage.url;
+  if(!rawImage&&(host==='amazon.in'||host.endsWith('.amazon.in'))){const landing=document.querySelector('#landingImage');rawImage=landing?.getAttribute('data-old-hires')||landing?.getAttribute('src');}
   let imageUrl='';try{const candidate=new URL(typeof rawImage==='string'?rawImage:meta('og:image'),u);if(candidate.protocol==='https:'&&!candidate.username&&!candidate.password&&candidate.href.length<=2048)imageUrl=candidate.href;}catch{}
   return {name,retailerUrl:u.href.slice(0,2048),price,variant,imageUrl};
 }

@@ -55,7 +55,7 @@ class ProductPreview {
         // Every redirect must stay on an exact retailer host; never fetch arbitrary user hosts.
         for(int hop=0;hop<4;hop++){
             for(InetAddress ip:InetAddress.getAllByName(u.getHost()))if(ip.isAnyLocalAddress()||ip.isLoopbackAddress()||ip.isLinkLocalAddress()||ip.isSiteLocalAddress()||ip.isMulticastAddress()||(ip.getAddress().length==16&&(ip.getAddress()[0]&0xfe)==0xfc))throw new IllegalArgumentException("Nonpublic address");
-            var r=Jsoup.connect(u.toString()).userAgent("LittleList/1.0 product preview").timeout(3000).maxBodySize(1_000_000).followRedirects(false).ignoreHttpErrors(true).execute();
+            var r=Jsoup.connect(u.toString()).userAgent("LittleList/1.0 product preview").timeout(5000).maxBodySize(2_000_000).followRedirects(false).ignoreHttpErrors(true).execute();
             if(r.statusCode()>=300&&r.statusCode()<400){u=allowed(u.resolve(r.header("Location")).toString());continue;}
             if(r.statusCode()!=200||r.contentType()==null||!r.contentType().toLowerCase(Locale.ROOT).contains("text/html"))return empty(value,"The store couldn't provide details. You can still add this gift manually.");
             return parse(r.parse(),u.toString());
@@ -77,7 +77,7 @@ class ProductPreview {
         img=image(im.isTextual()?im.asText():text(im,"url"));
         variant=String.join(" · ",List.of(text(p,"size"),text(p,"color")).stream().filter(v->!v.isBlank()).toList());
         String host=URI.create(url).getHost();String titleSelector=null,priceSelector=null;
-        if(host.endsWith("amazon.in")&&url.matches(".*/(?:dp|gp/product|gp/aw/d)/[A-Za-z0-9]{10}.*")){titleSelector="#productTitle";priceSelector="#corePriceDisplay_desktop_feature_div .a-price .a-offscreen";}
+        if(host.endsWith("amazon.in")&&url.matches(".*/(?:dp|gp/product|gp/aw/d)/[A-Za-z0-9]{10}.*")){titleSelector="#productTitle";priceSelector="#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen, #corePriceDisplay_desktop_feature_div .a-price:not(.a-text-price) .a-offscreen";}
         else if(host.endsWith("flipkart.com")&&URI.create(url).getPath().contains("/p/")){titleSelector="h1";priceSelector=".Nx9bqj.CxhGGd";}
         else if(host.endsWith("firstcry.com")&&URI.create(url).getPath().contains("/product-detail")){titleSelector="h1";priceSelector="#prod_price";}
         if(products.size()>1)return empty(url,"Several products were found. Please choose the details for your selected item.");
@@ -87,7 +87,11 @@ class ProductPreview {
         if(img.isBlank())img=image(meta(doc,"og:image"));
         if(img.isBlank()&&host.endsWith("amazon.in")){var landing=doc.selectFirst("#landingImage");if(landing!=null){img=image(landing.attr("data-old-hires"));if(img.isBlank())img=image(landing.attr("src"));}}
         if(price.isBlank()&&"INR".equals(meta(doc,"product:price:currency")))price=price(meta(doc,"product:price:amount"));
-        if(price.isBlank()&&priceSelector!=null){String visible=doc.select(priceSelector).text();if(visible.matches("(?:₹|Rs\\.?|INR)\\s*[\\d,]+(?:\\.\\d{1,2})?"))price=price(visible.replaceFirst("^(?:₹|Rs\\.?|INR)\\s*",""));}
+        if(price.isBlank()&&priceSelector!=null){
+            Set<String> candidates=new HashSet<>();
+            for(var el:doc.select(priceSelector)){String visible=el.text();if(visible.matches("(?:₹|Rs\\.?|INR)\\s*[\\d,]+(?:\\.\\d{1,2})?")){String candidate=price(visible.replaceFirst("^(?:₹|Rs\\.?|INR)\\s*",""));if(!candidate.isBlank())candidates.add(new BigDecimal(candidate).stripTrailingZeros().toPlainString());}}
+            if(candidates.size()==1)price=candidates.iterator().next();
+        }
         if(host.endsWith("amazon.in")){String v=doc.select("#variation_size_name .selection, #variation_color_name .selection").eachText().stream().reduce((a,b)->a+" · "+b).orElse("");if(!v.isBlank())variant=v;}
         return new Preview(limit(name,120),price,limit(variant,120),img,url,"Details suggested by the store. Check the image, variant and price before saving; prices can change.");
     }

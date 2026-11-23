@@ -1,6 +1,5 @@
 import {extractProduct} from './extractor.js';
-// Replace with the verified HTTPS deployment origin before publishing a production build.
-const APP_ORIGIN='http://localhost:3000';
+const APP_ORIGIN='https://little-list-30e7.onrender.com';
 let imageUrl='';
 const field=id=>document.getElementById(id),status=field('status');
 field('read').addEventListener('click',async()=>{
@@ -19,7 +18,8 @@ field('review').addEventListener('submit',async e=>{
  try{const u=new URL(field('url').value);if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw Error('Use a valid product URL.');
  const draft={imageUrl,name:field('name').value.slice(0,120),retailerUrl:u.href,price:field('price').value,variant:field('variant').value.slice(0,120)};
  if(u.href.length>2048)throw Error('This link is too long. Use a shorter product link.');
- await chrome.tabs.create({url:APP_ORIGIN+'/capture#draft='+encodeURIComponent(JSON.stringify(draft))});
+ const origin=field('destination').value==='local'?'http://localhost:3000':APP_ORIGIN;
+ await chrome.tabs.create({url:origin+'/capture#draft='+encodeURIComponent(JSON.stringify(draft))});
  status.textContent='Continue in Little List to select a registry and save.';
  }catch(e){status.textContent=e.message;}finally{field('continue').disabled=false;}
 });

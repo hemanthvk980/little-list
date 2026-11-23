@@ -1,3 +1,11 @@
+## 23 November 2026 — occasion/photo fixes and Amazon lookup
+
+- ProductPreviewTest: 8 passing tests including the actual Amazon alternate price-block pattern and image URL shape. Existing database schema unchanged.
+- Capture/extension/QR: 14 passing tests, including alternate price/image extraction and live/local handoff selection.
+- Next production build passed.
+- Playwright synthetic API fixtures: grouped occasion selection and custom wording round-trip; 390 px no overflow; selected photo preview and cancellation; in-flight cancellation feedback; centred photo placeholder; failed product refresh preserves edited name, price, image and note. No user data changed and no emails sent.
+- Live browser inspection/execution of the extension extractor on user-supplied Amazon product B0FH79G2MW returned the actual title, ₹499.00 estimate and image URL. Direct Java fetch returned generic HTML without product data; server scraping remains unreliable. No promise of live Render lookup success or Web Store publication.
+
 ## 22 November 2026 — product previews and registry image rows
 
 - Maven verify: 36 tests passed (17 wishlist/database, 7 admin/security, 7 product preview, 5 email), no failures/errors/skips. V8 image-reference migration exercised on PostgreSQL 17.

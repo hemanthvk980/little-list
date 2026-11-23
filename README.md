@@ -1,3 +1,9 @@
+## Occasion choices, photo controls and Amazon capture — 23 November 2026
+
+Onboarding and registry settings now share a grouped occasion picker with 21 suggestions (North/South Indian traditions, general celebrations and milestones) plus custom wording. Existing custom occasions remain editable. The native picker uses an ivory/peach gradient and plum accents; its opened menu follows the device's accessible native controls.
+
+Profile photos have a centred preview/placeholder, Cancel selection and Cancel upload. Cancelling a request cannot undo an upload already committed by the server; the UI refreshes the saved photo and explains removal. Failed/partial product previews now preserve existing fields. Amazon's alternate core-price block is supported by backend and extension, and the extension defaults to the live app with a local-development option. See [PRODUCT-PREVIEWS.md](PRODUCT-PREVIEWS.md) and [extension/README.md](extension/README.md).
+
 ## Product previews and horizontal gifts — 22 November 2026
 
 Review gift now attempts a bounded, authenticated product lookup for Amazon India, Flipkart and FirstCry. Suggested names, INR estimates, variants and supported retailer image URLs remain editable before saving. V8 stores only the image URL, not image bytes. Owner and guest registries use responsive horizontal rows with real images and a missing-image fallback. Admin encoding/checkbox styling is corrected. See [PRODUCT-PREVIEWS.md](PRODUCT-PREVIEWS.md) for supported sources, security, deployment and limitations.
