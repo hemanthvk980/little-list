@@ -28,6 +28,39 @@ class WishlistServiceTest {
     @Autowired RegistryApi registry;
     @Autowired ShortLinks shortLinks;
     @Autowired RegistryPhotos photos;
+    @Autowired GuestRecords guestRecords;
+    @Autowired GuestDetailRetention retention;
+    @Test void privateGuestRecordsRequireOwnerAndConfirmation() {
+        var auth=new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("guest-host","ignored");
+        var stranger=new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("other","ignored");
+        var own=service.create("local|guest-host",new Api.ListInput("Guest records",""));
+        own=service.saveGift("local|guest-host",own.id(),null,input(2));
+        own=service.publish("local|guest-host",own.id(),true);
+        final UUID listId=own.id();UUID item=own.items().getFirst().id();
+        var delivery=service.requestClaim(own.shareId(),item,"guest@example.test","purchase","Guest","With love","Local shop");
+        assertEquals(0L,guestRecords.list(auth,listId,0,20).getBody().get("total"));
+        var confirmed=service.confirm(delivery.token(),secret());
+        var result=guestRecords.list(auth,listId,0,20);
+        assertEquals("no-store",result.getHeaders().getCacheControl());assertEquals(1L,result.getBody().get("total"));
+        assertTrue(result.getBody().toString().contains("guest@example.test"));
+        assertFalse(service.shared(own.shareId()).toString().contains("guest@example.test"));
+        assertNull(db.queryForObject("select guest_email from claim_request where token_hash=?",String.class,WishlistService.hash(delivery.token())));
+        status(404,()->guestRecords.list(stranger,listId,0,20));
+        status(400,()->guestRecords.list(auth,listId,-1,20));
+        assertTrue(((java.util.List<?>)guestRecords.list(auth,listId,1,20).getBody().get("items")).isEmpty());
+        guestRecords.erase(auth,listId,confirmed.id());
+        assertFalse(guestRecords.list(auth,listId,0,20).getBody().toString().contains("guest@example.test"));
+        assertEquals(1,service.get("local|guest-host",listId).items().getFirst().purchased());
+    }
+    @Test void fullGiftRejectsNewRequestsAndRetentionErasesExpiredDetails() {
+        var delivery=service.requestClaim(list.shareId(),gift,"guest@example.test","purchase","Guest","Hello","Amazon");
+        var confirmed=service.confirm(delivery.token(),secret());
+        status(409,()->service.requestClaim(list.shareId(),gift,"next@example.test","purchase"));
+        db.update("update gift_claim set purchased_at=clock_timestamp()-interval '366 days' where id=?",confirmed.id());
+        retention.eraseExpired();
+        assertNull(db.queryForObject("select guest_email from gift_claim where id=?",String.class,confirmed.id()));
+        assertEquals(1,service.shared(list.shareId()).items().getFirst().purchased());
+    }
     @Test void imageReferencesSurviveSaveSharingAndRemoval() {
         String url="https://m.media-amazon.com/images/I/book.jpg";
         var saved=service.saveGift("owner",list.id(),gift,new Api.GiftInput("Book","Play","","https://www.amazon.in/dp/B012345678",49900,1,"","nice-to-have","link",null,url));

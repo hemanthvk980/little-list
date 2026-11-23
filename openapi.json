@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Little List API",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "description": "All sensitive responses are no-store. Local profile login uses form POST /local-login with username/password and CSRF; production uses Google OIDC. Errors from security filters may have an empty body. Each claim represents one unit. Prices are integer paise."
   },
   "servers": [
@@ -2763,6 +2763,106 @@
           }
         }
       }
+    },
+    "/wishlists/{id}/guests": {
+      "get": {
+        "summary": "Registry owner only: paginated confirmed purchase contacts; no-store",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                20,
+                50,
+                100
+              ],
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "items, total, page, size. Each item has id, gift, name, email, message, store, purchased. Contact fields and old purchase timestamps may be null."
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "404": {
+            "description": "Registry not owned"
+          },
+          "400": {
+            "description": "Invalid pagination"
+          }
+        }
+      }
+    },
+    "/wishlists/{id}/guests/{claimId}/details": {
+      "delete": {
+        "summary": "Registry owner only: erase guest personal details; retain purchased quantity",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Details erased or already absent"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "CSRF required"
+          },
+          "404": {
+            "description": "Registry not owned"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2868,6 +2968,21 @@
               "purchase"
             ],
             "default": "reserve"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "store": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
           }
         }
       },

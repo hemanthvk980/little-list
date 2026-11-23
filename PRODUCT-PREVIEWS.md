@@ -1,3 +1,7 @@
+## 23 November update
+
+Preview responses now include up to eight safe `images` candidates for the review dialog. FirstCry supports its exact `#seoprice` decimal field; Flipkart's observed `rukmini1.flixcart.com` and companion `rukmini2.flixcart.com` hosts are accepted. See [RETAILER-AUDIT.md](RETAILER-AUDIT.md) for measured successes and blocking limitations. These changes do not make blocked Amazon backend HTML usable.
+
 # Product previews and images
 
 ## Flow

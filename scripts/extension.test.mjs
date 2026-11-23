@@ -51,3 +51,12 @@ test('Amazon alternate core price and landing image are captured',()=>{
  const p=extract({url:'https://www.amazon.in/First-Kick-Blankets-Printed-Blanket/dp/B0FH79G2MW/',nodes:{'#productTitle':'First Kick Kids Blanket','#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen':'₹499.00','#landingImage':'https://m.media-amazon.com/images/I/61zQfj6RxDL._SL1024_.jpg'}});
  assert.equal(p.price,'499.00');assert.equal(p.imageUrl,'https://m.media-amazon.com/images/I/61zQfj6RxDL._SL1024_.jpg');
 });
+
+test('FirstCry decimal price excludes adjacent membership price',()=>{
+ const p=extract({url:'https://www.firstcry.com/brand/item/41848/product-detail',nodes:{h1:'Toothpaste','#seoprice':'138.33','.clubpriceimg':'13515'}});
+ assert.equal(p.price,'138.33');
+});
+test('Flipkart truncated heading uses complete structured name',()=>{
+ const p=extract({url:'https://www.flipkart.com/item/p/itm123',json:[{'@type':'Product',name:'Complete blanket name'}],nodes:{h1:'Blanket...more'}});
+ assert.equal(p.name,'Complete blanket name');
+});

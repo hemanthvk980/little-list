@@ -1,3 +1,10 @@
+## 23 November 2026 — product dialog, brands and purchase contacts
+
+- Next.js production build passed. Browser fixtures verified desktop preview data, modal close, 390 px mobile layout without horizontal content overflow, brand search, purchased gift controls, partial quantity availability and purchase-record pagination. These UI fixtures did not create user registries or send emails.
+- Real PostgreSQL/Testcontainers suite: AdminApi 7, EmailDelivery 5, WishlistService 19 passed. New cases cover owner-only contacts, explicit confirmation, no public leakage, pagination bounds, erasure without inventory change, exhausted request rejection and retention. ProductPreview 10 tests passed separately after CDN/image-candidate/FirstCry changes. Capture/extension/QR: 16 tests passed.
+- Read-only retail audit: 25 Amazon browser products, 24 direct backend lookups, two FirstCry pages and one Flipkart page. See RETAILER-AUDIT.md for limitations; Amazon backend import is NOT claimed fixed. ProductImportAuditTest is intentionally opt-in/skipped in CI.
+- No production deployment was verified. V9 must run on the backend before the new frontend. Thank-you tracking was deliberately deferred.
+
 ## 23 November 2026 — occasion/photo fixes and Amazon lookup
 
 - ProductPreviewTest: 8 passing tests including the actual Amazon alternate price-block pattern and image URL shape. Existing database schema unchanged.

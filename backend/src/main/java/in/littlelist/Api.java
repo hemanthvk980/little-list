@@ -112,7 +112,7 @@ class Api {
     @ResponseStatus(HttpStatus.ACCEPTED)
     void requestClaim(@PathVariable UUID shareId, @PathVariable UUID giftId,
                       @Valid @RequestBody ClaimRequest input) {
-        service.sendRequest(service.requestClaim(shareId, giftId, input.email(),input.intent()==null?"reserve":input.intent()));
+        service.sendRequest(service.requestClaim(shareId, giftId, input.email(),input.intent()==null?"reserve":input.intent(),input.name(),input.message(),input.store()));
     }
 
     @PostMapping("/claims/confirm")
@@ -150,7 +150,7 @@ class Api {
             this(name,category,note,retailerUrl,pricePaise,quantity,null,null,null,null);
         }
     }
-    record ClaimRequest(@NotBlank @Email @Size(max = 254) String email, @Pattern(regexp="reserve|purchase") String intent) {}
+    record ClaimRequest(@NotBlank @Email @Size(max = 254) String email, @Pattern(regexp="reserve|purchase") String intent, @Size(max=100) String name, @Size(max=500) String message, @Size(max=100) String store) {}
     record ConfirmInput(@NotBlank @Pattern(regexp = "[a-f0-9]{64}") String token,
                         @NotBlank @Pattern(regexp = "[a-f0-9]{64}") String managementToken) {}
     record TokenInput(@NotBlank @Pattern(regexp = "[a-f0-9]{64}") String token) {}

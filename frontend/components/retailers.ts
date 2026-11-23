@@ -23,4 +23,4 @@ export function parseCapture(raw:string):CaptureDraft{
  const price=field('price',20);return {name:field('name',120),retailerUrl,variant:field('variant',120),imageUrl:productImage(field('imageUrl',2048)),price:/^\d+(\.\d{1,2})?$/.test(price)&&Number(price)<=21474836.47?price:''};
 }
 
-export function productImage(value:string){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['m.media-amazon.com','images-na.ssl-images-amazon.com','images-eu.ssl-images-amazon.com','rukminim1.flixcart.com','rukminim2.flixcart.com','rukminim3.flixcart.com','cdn.fcglcdn.com','cdn.firstcry.com'].includes(u.hostname)&&value.length<=2048?u.href:'';}catch{return '';}}
+export function productImage(value:string){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['m.media-amazon.com','images-na.ssl-images-amazon.com','images-eu.ssl-images-amazon.com','rukmini1.flixcart.com','rukmini2.flixcart.com','rukminim1.flixcart.com','rukminim2.flixcart.com','rukminim3.flixcart.com','cdn.fcglcdn.com','cdn.firstcry.com'].includes(u.hostname)&&value.length<=2048?u.href:'';}catch{return '';}}

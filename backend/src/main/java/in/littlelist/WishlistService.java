@@ -92,14 +92,19 @@ public class WishlistService {
     public Shared shared(UUID share) { var r=row("select id,title,occasion,greeting,photo_version from wishlist where share_id=?",share); return new Shared((String)r.get("title"),(String)r.get("occasion"),gifts((UUID)r.get("id")),(String)r.get("greeting"),(UUID)r.get("photo_version")); }
     @Transactional public Delivery requestClaim(UUID share,UUID gift,String email) { return requestClaim(share,gift,email,"reserve"); }
     @Transactional public Delivery requestClaim(UUID share,UUID gift,String email,String intent) {
+        return requestClaim(share,gift,email,intent,null,null,null);
+    }
+    @Transactional public Delivery requestClaim(UUID share,UUID gift,String email,String intent,String name,String message,String store) {
         if(!Set.of("reserve","purchase").contains(intent)) throw error(400,"Choose reserve or purchase.");
         String recipient=hash(email.trim().toLowerCase(Locale.ROOT));
         db.queryForList("select pg_advisory_xact_lock(hashtext(?))",recipient);
         var list=row("select id from wishlist where share_id=? for update",share);
         row("select id from gift where id=? and wishlist_id=? and not archived",gift,list.get("id"));
+        if(occupied(gift)>=(Integer)row("select quantity from gift where id=?",gift).get("quantity"))throw error(409,"All units are already reserved or purchased.");
         int count=db.queryForObject("select count(*) from claim_request where created_at>clock_timestamp()-interval '15 minutes' and (recipient_hash=? or gift_id=?)",Integer.class,recipient,gift);
         if(count>=5) throw error(429,"Please wait 15 minutes before requesting another verification email.");
         String token=secret(); db.update("insert into claim_request(token_hash,gift_id,share_id,recipient_hash,intent,expires_at) values(?,?,?,?,?,clock_timestamp()+interval '30 minutes')",hash(token),gift,share,recipient,intent);
+        db.update("update claim_request set guest_name=?,guest_email=?,gift_message=?,purchase_store=? where token_hash=?",name,email.trim(),message,store,hash(token));
         return new Delivery(email,token,intent);
     }
     public void sendRequest(Delivery delivery) {
@@ -122,6 +127,8 @@ public class WishlistService {
         if(!db.queryForList("select id from gift_claim where token_hash=?",hash(management)).isEmpty()) throw error(409,"Use a new management credential for this gift.");
         UUID id=UUID.randomUUID();
         db.update("insert into gift_claim(id,gift_id,token_hash,status,held_until) values(?,?,?,?,clock_timestamp()+interval '48 hours')",id,gift.get("id"),hash(management),"purchase".equals(req.get("intent"))?"purchased":"held");
+        db.update("update gift_claim set guest_name=?,guest_email=?,gift_message=?,purchase_store=?,purchased_at=case when status='purchased' then clock_timestamp() else null end where id=?",req.get("guest_name"),req.get("guest_email"),req.get("gift_message"),req.get("purchase_store"),id);
+        db.update("update claim_request set guest_name=null,guest_email=null,gift_message=null,purchase_store=null where token_hash=?",hash(token));
         db.update("update claim_request set consumed_at=clock_timestamp(),claim_id=? where token_hash=?",id,hash(token)); return claim(management);
     }
     public Claim claim(String token) {
@@ -134,6 +141,6 @@ public class WishlistService {
         Claim c=claim(token); if(c.status().equals(status)) return c;
         if(c.status().equals("expired")) throw error(410,"Your hold expired. Open the wishlist to request a new hold, or contact the host if you already bought it.");
         if(!c.status().equals("held")) throw error(409,"This claim is already final and cannot be changed.");
-        db.update("update gift_claim set status=? where id=?",status,c.id()); return claim(token);
+        db.update("update gift_claim set status=?,purchased_at=case when ?='purchased' then clock_timestamp() else purchased_at end where id=?",status,status,c.id()); return claim(token);
     }
 }

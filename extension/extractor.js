@@ -25,11 +25,13 @@ export function extractProduct() {
     displayed=text('#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen')||text('#corePriceDisplay_desktop_feature_div .a-price .a-offscreen');
     variant=clean([text('#variation_size_name .selection'),text('#variation_color_name .selection')].filter(Boolean).join(' · '),120);
   } else if(host==='flipkart.com'||host.endsWith('.flipkart.com')){
-    name=clean(text('h1'),120)||name;
+    const visible=clean(text('h1'),120);
+    name=/\.\.\.more$/i.test(visible)?(clean(product?.name,120)||visible):visible||name;
     displayed=text('.Nx9bqj.CxhGGd');
   } else if(host==='firstcry.com'||host.endsWith('.firstcry.com')){
     name=clean(text('h1'),120)||name;
     displayed=text('#prod_price');
+    if(!price)price=number(text('#seoprice'));
   }
   if(!price){const match=displayed.match(/(?:₹|Rs\.?|INR)\s*([\d,]+(?:\.\d{1,2})?)(?![\d.])/i);if(match)price=number(match[1]);}
   if(!variant)variant=clean([product?.size,product?.color].filter(v=>typeof v==='string').join(' · '),120);

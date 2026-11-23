@@ -19,12 +19,12 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/v1/products")
 class ProductPreview {
     private static final Set<String> HOSTS=Set.of("amazon.in","www.amazon.in","m.amazon.in","amzn.in","amzn.to","flipkart.com","www.flipkart.com","dl.flipkart.com","fkrt.it","firstcry.com","www.firstcry.com");
-    private static final Set<String> IMAGES=Set.of("m.media-amazon.com","images-na.ssl-images-amazon.com","images-eu.ssl-images-amazon.com","rukminim1.flixcart.com","rukminim2.flixcart.com","rukminim3.flixcart.com","cdn.fcglcdn.com","cdn.firstcry.com");
+    private static final Set<String> IMAGES=Set.of("m.media-amazon.com","images-na.ssl-images-amazon.com","images-eu.ssl-images-amazon.com","rukmini1.flixcart.com","rukmini2.flixcart.com","rukminim1.flixcart.com","rukminim2.flixcart.com","rukminim3.flixcart.com","cdn.fcglcdn.com","cdn.firstcry.com");
     private final ObjectMapper json;
     private final Semaphore slots=new Semaphore(4);
     ProductPreview(ObjectMapper json){this.json=json;}
     record Input(@NotBlank @Size(max=2048) String url){}
-    record Preview(String name,String price,String variant,String imageUrl,String retailerUrl,String message){}
+    record Preview(String name,String price,String variant,String imageUrl,String retailerUrl,String message,List<String> images){}
     @PostMapping("/preview")
     ResponseEntity<Preview> preview(@Valid @RequestBody Input input,HttpSession session){
         synchronized(session){
@@ -62,7 +62,7 @@ class ProductPreview {
         }
         return empty(value,"This link redirects too many times. Paste the full product URL instead.");
     }
-    static Preview empty(String url,String message){return new Preview("","","","",url,message);}
+    static Preview empty(String url,String message){return new Preview("","","","",url,message,List.of());}
     Preview parse(Document doc,String url){
         List<JsonNode> products=new ArrayList<>();
         for(var node:doc.select("script[type=application/ld+json]").stream().limit(20).toList()){
@@ -71,9 +71,10 @@ class ProductPreview {
         }
         JsonNode p=products.size()==1?products.getFirst():json.createObjectNode();
         String name=text(p,"name"),price="",variant="",img="";
+        LinkedHashSet<String> images=new LinkedHashSet<>();
         var offer=p.path("offers");
         if(offer.isObject()&&"INR".equals(text(offer,"priceCurrency")))price=price(text(offer,"price"));
-        var im=p.path("image");if(im.isArray())im=im.path(0);
+        var im=p.path("image");if(im.isArray()){for(var candidate:im){String safe=image(candidate.isTextual()?candidate.asText():text(candidate,"url"));if(!safe.isBlank())images.add(safe);}im=im.path(0);}
         img=image(im.isTextual()?im.asText():text(im,"url"));
         variant=String.join(" · ",List.of(text(p,"size"),text(p,"color")).stream().filter(v->!v.isBlank()).toList());
         String host=URI.create(url).getHost();String titleSelector=null,priceSelector=null;
@@ -87,13 +88,16 @@ class ProductPreview {
         if(img.isBlank())img=image(meta(doc,"og:image"));
         if(img.isBlank()&&host.endsWith("amazon.in")){var landing=doc.selectFirst("#landingImage");if(landing!=null){img=image(landing.attr("data-old-hires"));if(img.isBlank())img=image(landing.attr("src"));}}
         if(price.isBlank()&&"INR".equals(meta(doc,"product:price:currency")))price=price(meta(doc,"product:price:amount"));
+        if(price.isBlank()&&host.endsWith("firstcry.com")&&URI.create(url).getPath().contains("/product-detail"))price=price(doc.select("#seoprice").text());
         if(price.isBlank()&&priceSelector!=null){
             Set<String> candidates=new HashSet<>();
             for(var el:doc.select(priceSelector)){String visible=el.text();if(visible.matches("(?:₹|Rs\\.?|INR)\\s*[\\d,]+(?:\\.\\d{1,2})?")){String candidate=price(visible.replaceFirst("^(?:₹|Rs\\.?|INR)\\s*",""));if(!candidate.isBlank())candidates.add(new BigDecimal(candidate).stripTrailingZeros().toPlainString());}}
             if(candidates.size()==1)price=candidates.iterator().next();
         }
         if(host.endsWith("amazon.in")){String v=doc.select("#variation_size_name .selection, #variation_color_name .selection").eachText().stream().reduce((a,b)->a+" · "+b).orElse("");if(!v.isBlank())variant=v;}
-        return new Preview(limit(name,120),price,limit(variant,120),img,url,"Details suggested by the store. Check the image, variant and price before saving; prices can change.");
+        if(!img.isBlank())images.addFirst(img);
+        if(host.endsWith("amazon.in")){var landing=doc.selectFirst("#landingImage");if(landing!=null){try{var dynamic=json.readTree(landing.attr("data-a-dynamic-image"));dynamic.fieldNames().forEachRemaining(v->{String safe=image(v);if(!safe.isBlank())images.add(safe);});}catch(Exception ignored){}}}
+        return new Preview(limit(name,120),price,limit(variant,120),img,url,"Details suggested by the store. Check the image, variant and price before saving; prices can change.",images.stream().limit(8).toList());
     }
     private static void find(JsonNode n,List<JsonNode> result,int depth){
         if(n==null||depth>6||result.size()>1)return;

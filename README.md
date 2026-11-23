@@ -1,3 +1,14 @@
+## Product review, brands and private purchase records — 23 November 2026
+
+- Add gift opens an accessible desktop dialog / mobile sheet with centred image, selectable image candidates, editable price and details, refresh, cancel and save feedback.
+- `/brands` provides nine India-relevant brand browsing links, search, category and initial filters. These are store shortcuts, not a live or affiliated catalogue.
+- Fully purchased gifts move to a Purchased group and have no guest shopping link or active claim buttons. Partial quantities remain available. The backend rejects new requests for exhausted inventory and keeps transactional confirmation checks.
+- Gift tracker lazily loads owner-only, paginated confirmed purchase contacts: name, verified email, optional message/store and recorded date. Owners can erase personal details without reopening the gift. Thank-you tracking is deferred.
+- Flyway **V9** adds nullable guest fields. Deploy backend before frontend; no new environment variable is required. Old purchases remain valid with unknown contact/date fields.
+- Contact retention runs hourly: expired verification details are cleared; purchase contacts after 365 days; expired/released reservation contacts after 30 days. Database access, backups and mail-provider retention remain operator responsibilities. Contact fields are not application-encrypted.
+
+Read [RETAILER-AUDIT.md](RETAILER-AUDIT.md) before assuming Amazon paste-link import works everywhere. Browser pages exposed data for 25 tested products, while direct backend lookup returned no usable metadata for the 24-product batch. The optional Chrome button remains the working fallback; no CAPTCHA bypass or fabricated product prices were added.
+
 ## Occasion choices, photo controls and Amazon capture — 23 November 2026
 
 Onboarding and registry settings now share a grouped occasion picker with 21 suggestions (North/South Indian traditions, general celebrations and milestones) plus custom wording. Existing custom occasions remain editable. The native picker uses an ivory/peach gradient and plum accents; its opened menu follows the device's accessible native controls.
