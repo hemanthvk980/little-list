@@ -36,6 +36,7 @@ server:
         secure: true
         same-site: lax
 app:
+  password-breach-check: ${PASSWORD_BREACH_CHECK:true}
   web-url: ${WEB_URL}
   mail-from: ${MAIL_FROM:}
   mail-provider: ${MAIL_PROVIDER:smtp}
@@ -67,6 +68,7 @@ server:
       cookie:
         secure: false
 app:
+  password-breach-check: false
   web-url: ${WEB_URL:http://localhost:3000}
   mail-from: ${MAIL_FROM:wishlist@littlelist.test}
 ---

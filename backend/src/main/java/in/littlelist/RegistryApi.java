@@ -14,8 +14,8 @@ import org.springframework.http.HttpStatus;
 @RestController
 @RequestMapping("/api/v1")
 class RegistryApi {
-    private final JdbcTemplate db; private final WishlistService service; private final ObjectMapper json;
-    RegistryApi(JdbcTemplate db,WishlistService service,ObjectMapper json){this.db=db;this.service=service;this.json=json;}
+    private final JdbcTemplate db; private final WishlistService service; private final ObjectMapper json; private final JourneyApi journeys;
+    RegistryApi(JdbcTemplate db,WishlistService service,ObjectMapper json,JourneyApi journeys){this.db=db;this.service=service;this.json=json;this.journeys=journeys;}
     record Starter(String key,String name,String category,int quantity,List<String> collections) {}
     static final List<Starter> STARTERS=List.of(
         new Starter("swaddles","Cotton swaddles","Sleep",2,List.of("essentials","budget","twins")),
@@ -34,9 +34,11 @@ class RegistryApi {
         new Starter("thermometer","Digital thermometer","Health & safety",1,List.of("essentials")),
         new Starter("meal","A home-cooked meal","Help & experiences",1,List.of("budget","second"))
     );
-    record Draft(@Min(1) @Max(3) int step,@Size(max=40) String chapter,@Size(max=100) String title,
+    record Draft(@Min(1) @Max(5) int step,@Size(max=40) String chapter,@Size(max=100) String title,
                  @Size(max=80) String occasion,@Size(max=500) String greeting,@Size(max=20) String collection,
-                 @NotNull @Size(max=20) List<@NotBlank @Size(max=40) String> selected) {}
+                 @NotNull @Size(max=20) List<@NotBlank @Size(max=40) String> selected, @Valid JourneyApi.Journey journey) {
+        Draft(int step,String chapter,String title,String occasion,String greeting,String collection,List<String> selected){this(step,chapter,title,occasion,greeting,collection,selected,null);}
+    }
     record Complete(@NotNull UUID requestId,@NotNull @Valid Draft draft) {}
     record Decision(@NotBlank @Pattern(regexp="undecided|need|have|not-needed") String state) {}
     private String encode(Object value){try{return json.writeValueAsString(value);}catch(Exception e){throw new IllegalStateException(e);}}
@@ -63,6 +65,7 @@ class RegistryApi {
         Set<String> selected=new HashSet<>(draft.selected());
         if(!STARTERS.stream().map(Starter::key).toList().containsAll(selected))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Choose items from the starter checklist.");
         var list=service.create(owner,new Api.ListInput(draft.title(),draft.occasion(),draft.greeting()));
+        if(draft.journey()!=null)journeys.save(list.id(),draft.journey());
         for(var item:STARTERS)if(selected.contains(item.key()))service.saveGift(owner,list.id(),null,new Api.GiftInput(item.name(),item.category(),"Edit this suggestion to suit your family.",null,null,item.quantity(),"","nice-to-have","template",null));
         db.update("insert into onboarding_result(owner_subject,request_id,body_hash,wishlist_id) values(?,?,?,?)",owner,input.requestId(),hash,list.id());
         db.update("delete from onboarding where owner_subject=?",owner);

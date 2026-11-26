@@ -36,7 +36,7 @@ class Api {
     @GetMapping("/session")
     Map<String, Object> session(Authentication principal, CsrfToken csrf) {
         return Map.of("admin", admin.allowed(principal), "signedIn", principal != null, "csrf", csrf.getToken(),
-            "local", local.getIfAvailable() != null, "google", google.getIfAvailable() != null);
+            "password", true, "local", local.getIfAvailable() != null, "google", google.getIfAvailable() != null);
     }
 
     @GetMapping("/identity")
@@ -131,6 +131,7 @@ class Api {
     }
 
     static String owner(Authentication auth) {
+        if (auth.getPrincipal() instanceof AccountPrincipal account) return "password|" + account.id();
         if (auth.getPrincipal() instanceof OidcUser user) {
             return user.getIssuer() + "|" + user.getSubject();
         }

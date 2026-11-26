@@ -1,3 +1,13 @@
+## Family onboarding and password accounts — 26 November 2026
+
+- Original Little List homepage moment selector, soft motion (with reduced-motion support), and responsive account pages.
+- Five-part onboarding: family chapter, optional arrival details, preferences, registry details and starter gifts. Anonymous progress resumes after signup; no gifts are added without selection.
+- Private, editable arrival countdown in the owner workspace. Date and journey answers are never included in guest registry responses.
+- Username/password signup, email verification, signin, password recovery and session revocation, alongside existing Google signin. Google and password accounts are separate; password accounts cannot access the Google-identity-restricted admin area.
+- Deploy backend first so Flyway **V10** creates the account and journey tables, then rebuild/redeploy frontend. Working email delivery is required. Production password breach screening is enabled by default.
+
+See [ACCOUNTS-AND-ONBOARDING.md](ACCOUNTS-AND-ONBOARDING.md) for configuration, security controls, limits and verification. Older dated deployment and test notes below are historical.
+
 ## Product review, brands and private purchase records — 23 November 2026
 
 - Add gift opens an accessible desktop dialog / mobile sheet with centred image, selectable image candidates, editable price and details, refresh, cancel and save feedback.

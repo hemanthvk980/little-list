@@ -1,3 +1,3 @@
-import { SignIn } from '../../components/client';
+import {Account} from '../../components/account';
 export const metadata={robots:{index:false,follow:false}};
-export default function Page(){return <SignIn/>;}
+export default function Page(){return <Account/>;}

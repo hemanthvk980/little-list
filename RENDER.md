@@ -1,3 +1,5 @@
+> **26 November 2026 update:** Deploy the backend with Flyway V10 before the frontend for password accounts and private journey tracking. Keep working mail delivery, `WEB_URL` set to the frontend HTTPS origin, and `PASSWORD_BREACH_CHECK=true` (default). Allow outbound HTTPS to the HIBP password range API. See [account deployment steps](ACCOUNTS-AND-ONBOARDING.md#backend-deployment). Google remains optional for ordinary accounts but required for the existing owner admin allowlist.
+
 ## Render Free email update — 22 November 2026
 
 The backend now supports `MAIL_PROVIDER=resend` through HTTPS, or `MAIL_PROVIDER=disabled` as a temporary mode that rejects email operations. See [EMAIL.md](EMAIL.md) for exact setup. Existing SMTP instructions below apply only to SMTP-capable hosting; Render Free blocks SMTP. Configure the provider on the backend and redeploy; the frontend settings are unchanged.

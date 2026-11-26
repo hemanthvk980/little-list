@@ -25,10 +25,10 @@ class SecurityConfig {
 
     @Bean
     SecurityFilterChain security(HttpSecurity http, ObjectProvider<InMemoryUserDetailsManager> local,
-                                ObjectProvider<ClientRegistrationRepository> google, AdminAccess admin) throws Exception {
+                                ObjectProvider<ClientRegistrationRepository> google, AdminAccess admin, org.springframework.jdbc.core.JdbcTemplate db) throws Exception {
         http.authorizeHttpRequests(auth -> auth
             .requestMatchers("/r/**", "/actuator/health", "/api/v1/session", "/api/v1/shared/**",
-                "/api/v1/claims/**", "/oauth2/**", "/login/oauth2/**", "/error").permitAll()
+                "/api/v1/auth/**", "/api/v1/claims/**", "/oauth2/**", "/login/oauth2/**", "/error").permitAll()
             .requestMatchers("/api/v1/admin/**").access((authentication, context) -> new org.springframework.security.authorization.AuthorizationDecision(admin.allowed(authentication.get())))
             .anyRequest().authenticated())
             .exceptionHandling(errors -> errors.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
@@ -46,6 +46,7 @@ class SecurityConfig {
                 .successHandler((request,response,authentication) -> { admin.login(authentication); response.sendRedirect("/dashboard"); })
                 .failureUrl("/sign-in?error=google"));
         }
+        http.addFilterAfter(new AccountSessionFilter(db), org.springframework.security.web.context.SecurityContextHolderFilter.class);
         return http.build();
     }
 }
